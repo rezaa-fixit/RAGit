@@ -241,11 +241,11 @@ async function main() {
         return json(response, 200, readiness, authHeaders(config, authorizationState));
       }
 
-      if (!authorizationState.ok) {
-        return unauthorized(response);
-      }
-
       if ((isGet || isHead) && url.pathname === "/") {
+        if (!authorizationState.ok) {
+          return unauthorized(response);
+        }
+
         if (isHead) {
           return empty(response, 200, {
             "Content-Type": "text/html; charset=utf-8",
@@ -336,6 +336,10 @@ async function main() {
           answer,
           hits: result.hits.map(presentHit)
         }, authHeaders(config, authorizationState));
+      }
+
+      if (!authorizationState.ok) {
+        return unauthorized(response);
       }
 
       return json(response, 404, { error: "Not found" });
