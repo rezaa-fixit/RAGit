@@ -43,6 +43,18 @@ function serializeError(error) {
   };
 }
 
+async function loadOptionalSearchIndex() {
+  try {
+    return await loadSearchIndex();
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
 function unauthorized(response) {
   response.writeHead(401, {
     "Content-Type": "application/json; charset=utf-8",
@@ -88,7 +100,10 @@ async function getReadiness(config, fileIndex) {
   const authEnabled = Boolean(config.basicAuthUser && config.basicAuthPassword);
 
   if (config.searchBackend === "file") {
-    const index = fileIndex ?? await loadSearchIndex();
+    const index = fileIndex ?? await loadOptionalSearchIndex();
+    if (!index) {
+      throw new Error("Local search index is missing for file-backed mode.");
+    }
     return {
       ok: true,
       mode: "file",
@@ -111,7 +126,10 @@ async function getReadiness(config, fileIndex) {
       throw error;
     }
 
-    const index = fileIndex ?? await loadSearchIndex();
+    const index = fileIndex ?? await loadOptionalSearchIndex();
+    if (!index) {
+      throw error;
+    }
     return {
       ok: true,
       mode: "file-fallback",
@@ -127,9 +145,10 @@ async function getReadiness(config, fileIndex) {
 
 async function main() {
   const config = await loadConfig();
-  const fileIndex = config.searchBackend === "file" ? await loadSearchIndex() : null;
-  const metadataIndex = fileIndex ?? await loadSearchIndex();
-  const metadata = collectMetadata(metadataIndex);
+  const fileIndex = config.searchBackend === "file"
+    ? await loadOptionalSearchIndex()
+    : await loadOptionalSearchIndex();
+  const metadata = collectMetadata(fileIndex ?? []);
 
   function parseFilters(searchParams) {
     return {
@@ -146,7 +165,6 @@ async function main() {
       const isGet = request.method === "GET";
 
       if ((isGet || isHead) && url.pathname === "/health") {
-        const index = fileIndex ?? await loadSearchIndex();
         if (isHead) {
           return empty(response, 200, {
             "Content-Type": "application/json; charset=utf-8"
@@ -155,8 +173,8 @@ async function main() {
         return json(response, 200, {
           ok: true,
           searchBackend: config.searchBackend,
-          documents: new Set(index.map((row) => row.documentId)).size,
-          chunks: index.length
+          documents: fileIndex ? new Set(fileIndex.map((row) => row.documentId)).size : null,
+          chunks: fileIndex ? fileIndex.length : null
         });
       }
 
