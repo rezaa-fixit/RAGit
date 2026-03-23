@@ -35,11 +35,11 @@ export async function generateAnswer(question, hits, config) {
           {
             role: "system",
             content:
-              "Du er en juridisk RAG-assistent. Svar pa dansk og kun ud fra de givne kilder. Start med en kort konklusion, forklar derefter hovedpunkterne i et klart sprog, og afslut med et kort afsnit om eventuelle forbehold. Hvis kilderne ikke er nok, sig det tydeligt. Medtag altid kildehenvisninger som [Kilde 1], [Kilde 2] osv. Prioriter de mest direkte juridiske udsagn, brug helst flere forskellige afgorelser hvis kilderne peger i samme retning, og undga at bygge svaret pa gentagelser af samme pointe."
+              "Du er en juridisk RAG-assistent. Svar på dansk og kun ud fra de givne kilder. Brug denne faste struktur og disse overskrifter præcist: 'Kort svar', 'Det vigtigste', 'Kilder' og 'Forbehold'. Under 'Det vigtigste' skal du bruge 3-5 korte punktlinjer. Under 'Kilder' skal du nævne de mest centrale kilder med [Kilde 1], [Kilde 2] osv. Hvis kilderne ikke er tilstrækkelige, skal du skrive det tydeligt under 'Forbehold'. Prioriter de mest direkte juridiske udsagn, brug helst flere forskellige afgørelser hvis kilderne peger i samme retning, og undgå gentagelser."
           },
           {
             role: "user",
-            content: `Sporgsmal: ${question}\n\nKilder:\n${context}`
+            content: `Spørgsmål: ${question}\n\nKilder:\n${context}`
           }
         ],
         temperature: 0.1
@@ -61,25 +61,54 @@ export async function generateAnswer(question, hits, config) {
 
 function buildFallbackAnswer(question, hits) {
   if (hits.length === 0) {
-    return `Jeg fandt ingen relevante kilder til sporgsmalet: "${question}".`;
+    return [
+      "Kort svar",
+      `Jeg fandt ikke tilstrækkelige kilder til at besvare spørgsmålet: "${question}".`,
+      "",
+      "Det vigtigste",
+      "- Der blev ikke fundet relevante afgørelser i det aktuelle udsnit af databasen.",
+      "- Prøv at omformulere spørgsmålet eller fjerne filtre.",
+      "",
+      "Kilder",
+      "- Ingen relevante kilder fundet.",
+      "",
+      "Forbehold",
+      "- Svaret bygger på de aktuelle søgeresultater og kan ændre sig, hvis flere kilder kommer med."
+    ].join("\n");
   }
 
-  const intro =
-    `Jeg har ikke en aktiv chat-model konfigureret, sa her er de mest relevante ` +
-    `kilder til sporgsmalet: "${question}".`;
   const bullets = hits
     .slice(0, 3)
     .map(
       (rawHit, index) => {
         const hit = normalizeHit(rawHit);
         const suffix = hit.referenceLabel ? ` [${hit.referenceLabel}]` : "";
-        return `[Kilde ${index + 1}] ${hit.title} (${hit.date ?? "ukendt dato"})${suffix} - ` +
-        `${hit.text.slice(0, 320).trim()}`
+        return `- [Kilde ${index + 1}] ${hit.title} (${hit.date ?? "ukendt dato"})${suffix}`
       }
     )
     .join("\n");
 
-  return `${intro}\n\n${bullets}`;
+  const highlights = hits
+    .slice(0, 3)
+    .map((rawHit, index) => {
+      const hit = normalizeHit(rawHit);
+      return `- [Kilde ${index + 1}] ${hit.text.slice(0, 220).trim()}`;
+    })
+    .join("\n");
+
+  return [
+    "Kort svar",
+    `Her er et foreløbigt svar på spørgsmålet "${question}" baseret på de mest relevante fundne kilder.`,
+    "",
+    "Det vigtigste",
+    highlights,
+    "",
+    "Kilder",
+    bullets,
+    "",
+    "Forbehold",
+    "- Svaret er genereret i fallback-tilstand og bør læses sammen med de viste kilder."
+  ].join("\n");
 }
 
 function normalizeHit(hit) {

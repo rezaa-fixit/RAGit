@@ -642,11 +642,35 @@ export function renderWebUi() {
         margin: 0 0 14px;
       }
 
+      .answer-body h4 {
+        margin: 22px 0 10px;
+        font-size: 0.82rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent-strong);
+        font-family: "Arial", sans-serif;
+      }
+
+      .answer-body h4:first-child {
+        margin-top: 0;
+      }
+
+      .answer-body ul {
+        margin: 0 0 16px 0;
+        padding-left: 1.2rem;
+        color: var(--muted-strong);
+      }
+
+      .answer-body li {
+        margin: 0 0 8px;
+        line-height: 1.7;
+      }
+
       .answer-body p:last-child {
         margin-bottom: 0;
       }
 
-      .answer-body.is-collapsed p:nth-child(n + 5) {
+      .answer-body.is-collapsed > :nth-child(n + 7) {
         display: none;
       }
 
@@ -1074,16 +1098,16 @@ export function renderWebUi() {
         <section class="hero">
           <div class="hero-copy">
             <div class="eyebrow">Folketingets Ombudsmand</div>
-            <h1>Moderne juridisk sogning uden rod.</h1>
-            <div class="hero-text">
-              Sog, filtrer og fa svar med direkte henvisninger til relevante udtalelser, sider og afgorelser.
-              Graden af precision kommer fra hybrid retrieval, metadatafiltre og citationsbaseret svarlag.
-            </div>
+              <h1>Juridisk søgning med klare svar.</h1>
+              <div class="hero-text">
+              Søg, filtrer og få kildebaserede svar med direkte henvisninger til relevante udtalelser, sider og afgørelser.
+              Løsningen kombinerer hybrid retrieval, metadatafiltre og et svarlag, der holder sig tæt til kilderne.
+              </div>
 
             <div class="hero-grid">
               <div class="stat">
                 <div class="stat-value" id="stat-documents">88</div>
-                <div class="stat-label">Afgorelser</div>
+                  <div class="stat-label">Afgørelser</div>
               </div>
               <div class="stat">
                 <div class="stat-value" id="stat-years">3</div>
@@ -1100,14 +1124,14 @@ export function renderWebUi() {
             <div class="card-kicker">Arbejdsflow</div>
             <h2>Bygget til hurtig afklaring</h2>
             <p>
-              Brug search til praecise fund eller svar til et kort, kildebundet overblik. Filtrene skarer
-              datagrundlaget til, og hvert hit viser, hvor i materialet svaret stammer fra.
+              Brug kildesøgning til præcise fund eller AI-svar til et kort juridisk overblik. Filtrene afgrænser
+              datagrundlaget, og hvert hit viser, hvor i materialet svaret stammer fra.
             </p>
 
             <div class="hero-list">
               <div class="hero-item">
-                <strong>Search</strong>
-                <span>Til praecise fund og sammenligning af afgorelser</span>
+                  <strong>Kildesøgning</strong>
+                  <span>Til præcise fund og sammenligning af afgørelser</span>
               </div>
               <div class="hero-item">
                 <strong>Svar</strong>
@@ -1115,7 +1139,7 @@ export function renderWebUi() {
               </div>
               <div class="hero-item">
                 <strong>Filtre</strong>
-                <span>Til afgransning pa ar, ministerium og emne</span>
+                  <span>Til afgrænsning på år, ministerium og emne</span>
               </div>
             </div>
           </aside>
@@ -1126,30 +1150,30 @@ export function renderWebUi() {
             <div class="panel-heading">
               <div>
                 <div class="section-kicker">Arbejdspanel</div>
-                <h2>Stil et juridisk sporgsmal</h2>
+                <h2>Stil et juridisk spørgsmål</h2>
               </div>
             </div>
             <div class="panel-subtitle">
-              Brug et konkret sporgsmal, eller filtrer korpuset ned for at fokusere pa en bestemt myndighed
+              Brug et konkret spørgsmål, eller filtrer korpuset for at fokusere på en bestemt myndighed
               eller periode.
             </div>
 
             <div class="form-grid">
               <label>
                 <div class="label-row">
-                  <span class="label">Sporgsmal</span>
+                  <span class="label">Spørgsmål</span>
                   <span class="label-hint">Naturligt sprog</span>
                 </div>
-                <textarea id="question" placeholder="Hvad siger ombudsmanden om aktindsigt i dokumenter pa aktliste?"></textarea>
+                <textarea id="question" placeholder="Hvad gælder der om aktindsigt i dokumenter på en aktliste?"></textarea>
               </label>
 
               <div class="control-row">
                 <label>
                   <div class="label-row">
-                    <span class="label">Ar</span>
+                    <span class="label">År</span>
                   </div>
                   <select id="year">
-                    <option value="">Alle ar</option>
+                    <option value="">Alle år</option>
                   </select>
                 </label>
 
@@ -1198,18 +1222,18 @@ export function renderWebUi() {
 
             <div class="subpanel">
               <div class="subpanel-head">
-                <div class="card-kicker">Seneste sogninger</div>
+              <div class="card-kicker">Seneste søgninger</div>
                 <button type="button" class="chip chip-subtle chip-danger" id="clear-history">Ryd</button>
               </div>
               <div class="mini-list" id="history-list"></div>
             </div>
 
             <div class="subpanel">
-              <div class="card-kicker">Pinned afgorelser</div>
+              <div class="card-kicker">Gemte afgørelser</div>
               <div class="mini-list" id="pins-list"></div>
             </div>
 
-            <div class="status" id="status">Klar til sogning.</div>
+            <div class="status" id="status">Klar til at søge i kilder og generere svar.</div>
           </form>
 
           <section class="panel results">
@@ -1229,12 +1253,12 @@ export function renderWebUi() {
               <div class="results-head">
                 <div>
                   <div class="section-kicker">Arbejdsbord</div>
-                  <h3>Gemte afgorelser</h3>
+                  <h3>Gemte afgørelser</h3>
                 </div>
                 <button type="button" class="icon-button" id="export-workspace">Eksporter</button>
               </div>
               <div class="workspace-controls">
-                <input class="workspace-labels" id="workspace-filter" placeholder="Filtrer pa label eller FOB-id" />
+                <input class="workspace-labels" id="workspace-filter" placeholder="Filtrer på label, titel eller FOB-id" />
                 <select id="workspace-sort">
                   <option value="recent">Nyeste pin først</option>
                   <option value="title">Titel A-Z</option>
@@ -1269,7 +1293,7 @@ export function renderWebUi() {
 
             <div class="hit-list" id="hits">
               <div class="empty">
-                Start med et sporgsmal eller et af forslagene til venstre. Resultaterne viser de mest relevante
+                Start med et spørgsmål eller et af forslagene til venstre. Resultaterne viser de mest relevante
                 udtalelser med kildehenvisninger og links.
               </div>
             </div>
@@ -1454,7 +1478,7 @@ export function renderWebUi() {
 
       function renderPins() {
         if (!pinnedDocuments.length) {
-          pinsListEl.innerHTML = '<span class="tag">Ingen pinned endnu</span>';
+          pinsListEl.innerHTML = '<span class="tag">Ingen gemte afgørelser endnu</span>';
           return;
         }
 
@@ -1517,7 +1541,7 @@ export function renderWebUi() {
         const workspaceItems = getFilteredPinnedDocuments();
 
         if (!workspaceItems.length) {
-          workspaceGridEl.innerHTML = '<div class="empty">Ingen pinned afgorelser matcher det aktuelle filter.</div>';
+          workspaceGridEl.innerHTML = '<div class="empty">Ingen gemte afgørelser matcher det aktuelle filter.</div>';
           compareSectionEl.hidden = true;
           compareGridEl.innerHTML = "";
           return;
@@ -1534,14 +1558,14 @@ export function renderWebUi() {
             .join("");
           return \`
             <article class="workspace-card">
-              <div class="card-kicker">Pinned afgorelse</div>
+              <div class="card-kicker">Gemt afgørelse</div>
               <h4>\${escapeHtml(item.title)}</h4>
               <p>\${escapeHtml(summary || "Ingen ekstra metadata")}</p>
               \${labelTags ? \`<div class="meta-row">\${labelTags}</div>\` : ""}
               <input class="workspace-labels" data-labels-document="\${escapeHtml(item.documentId)}" value="\${escapeHtml(item.labels ?? "")}" placeholder="Labels, fx aktindsigt, temakrav, vigtig" />
-              <textarea class="workspace-note" data-note-document="\${escapeHtml(item.documentId)}" placeholder="Skriv dine noter til afgorelsen her...">\${escapeHtml(item.note ?? "")}</textarea>
+              <textarea class="workspace-note" data-note-document="\${escapeHtml(item.documentId)}" placeholder="Skriv dine noter til afgørelsen her...">\${escapeHtml(item.note ?? "")}</textarea>
               <div class="workspace-actions">
-                <a class="link-button" href="\${item.htmlUrl}" target="_blank" rel="noreferrer">Afgorelse</a>
+                <a class="link-button" href="\${item.htmlUrl}" target="_blank" rel="noreferrer">Afgørelse</a>
                 <button type="button" class="icon-button" data-unpin-document="\${escapeHtml(item.documentId)}">Fjern pin</button>
               </div>
               </article>
@@ -1615,7 +1639,7 @@ export function renderWebUi() {
 
       function exportWorkspace() {
         if (!pinnedDocuments.length) {
-          statusEl.textContent = "Der er ingen pinned afgorelser at eksportere.";
+          statusEl.textContent = "Der er ingen gemte afgørelser at eksportere.";
           return;
         }
 
@@ -1652,7 +1676,7 @@ export function renderWebUi() {
         link.click();
         link.remove();
         URL.revokeObjectURL(url);
-        statusEl.textContent = "Workspace eksporteret som Markdown.";
+          statusEl.textContent = "Arbejdsbordet er eksporteret som Markdown.";
       }
 
       function formatTag(label, value) {
@@ -1706,7 +1730,7 @@ export function renderWebUi() {
         metaEl.innerHTML = "";
         activeFiltersEl.innerHTML = mode === "ask"
           ? '<span class="filter-chip">Genererer svar</span>'
-          : '<span class="filter-chip">Soger i kilder</span>';
+          : '<span class="filter-chip">Søger i kilder</span>';
         hitsEl.innerHTML = \`
           <div class="loading-stack">
             <div class="skeleton skeleton-card">
@@ -1730,12 +1754,12 @@ export function renderWebUi() {
       function renderHeaderMeta(payload) {
         const metaTags = [
           payload.backend ? formatTag("Backend", payload.backend) : null,
-          payload.question ? formatTag("Sporgsmal", payload.question) : null
+          payload.question ? formatTag("Spørgsmål", payload.question) : null
         ].filter(Boolean);
 
         const filterTags = [
           payload.filters?.year
-            ? \`<span class="filter-chip">Ar: \${escapeHtml(payload.filters.year)}<button type="button" data-clear-filter="year" aria-label="Fjern ar-filter">x</button></span>\`
+            ? \`<span class="filter-chip">År: \${escapeHtml(payload.filters.year)}<button type="button" data-clear-filter="year" aria-label="Fjern år-filter">x</button></span>\`
             : null,
           payload.filters?.ministry
             ? \`<span class="filter-chip">Ministerium: \${escapeHtml(payload.filters.ministry)}<button type="button" data-clear-filter="ministry" aria-label="Fjern ministerium-filter">x</button></span>\`
@@ -1773,9 +1797,26 @@ export function renderWebUi() {
           .trim()
           .split(/\\n\\s*\\n/)
           .filter(Boolean)
-          .map((paragraph) =>
-            \`<p>\${escapeHtml(paragraph).replace(/\\[Kilde\\s+(\\d+)\\]/g, '<a href="#source-card-$1" class="answer-ref" data-source-ref="$1">Kilde $1</a>')}</p>\`
-          )
+          .map((block) => {
+            const lines = block.split(/\\n/).map((line) => line.trim()).filter(Boolean);
+            if (!lines.length) {
+              return "";
+            }
+
+            if (lines.length === 1 && /^(Kort svar|Det vigtigste|Kilder|Forbehold)$/i.test(lines[0])) {
+              return \`<h4>\${escapeHtml(lines[0])}</h4>\`;
+            }
+
+            if (lines.every((line) => /^[-*]\\s+/.test(line))) {
+              const items = lines
+                .map((line) => line.replace(/^[-*]\\s+/, ""))
+                .map((line) => \`<li>\${escapeHtml(line).replace(/\\[Kilde\\s+(\\d+)\\]/g, '<a href="#source-card-$1" class="answer-ref" data-source-ref="$1">Kilde $1</a>')}</li>\`)
+                .join("");
+              return \`<ul>\${items}</ul>\`;
+            }
+
+            return \`<p>\${escapeHtml(lines.join(" ")).replace(/\\[Kilde\\s+(\\d+)\\]/g, '<a href="#source-card-$1" class="answer-ref" data-source-ref="$1">Kilde $1</a>')}</p>\`;
+          })
           .join("");
 
         answerBodyEl.innerHTML = html;
@@ -1812,12 +1853,12 @@ export function renderWebUi() {
                 </div>
                 <div class="hit-meta">
                   \${meta.map((item) => \`<span class="tag">\${escapeHtml(item)}</span>\`).join("")}
-                  <button type="button" class="icon-button\${pinned ? " is-active" : ""}" data-pin-document="\${escapeHtml(hit.documentId)}">Pin</button>
+                  <button type="button" class="icon-button\${pinned ? " is-active" : ""}" data-pin-document="\${escapeHtml(hit.documentId)}">Gem</button>
                 </div>
               </div>
               <div class="source-snippet">\${highlightText(hit.text, query)}</div>
               <div class="hit-links">
-                \${hitLink("Afgorelse", hit.htmlUrl)}
+                \${hitLink("Afgørelse", hit.htmlUrl)}
                 \${hitLink("PDF", hit.pdfUrl)}
                 \${hitLink("Retsinformation", hit.retsinformationUrl)}
               </div>
@@ -1845,7 +1886,7 @@ export function renderWebUi() {
 
       function renderHits(hits, query) {
         if (!hits?.length) {
-          hitsEl.innerHTML = '<div class="empty">Ingen resultater for de valgte filtre. Prova at fjerne et filter eller omformulere sporgsmalet.</div>';
+          hitsEl.innerHTML = '<div class="empty">Ingen resultater for de valgte filtre. Prøv at fjerne et filter eller omformulere spørgsmålet.</div>';
           return;
         }
 
@@ -1872,8 +1913,8 @@ export function renderWebUi() {
               <div class="hit-summary">\${summary}</div>
 
               <div class="hit-links">
-                <button type="button" class="icon-button\${pinned ? " is-active" : ""}" data-pin-document="\${escapeHtml(hit.documentId)}">Pin afgorelse</button>
-                \${hitLink("Afgorelse", hit.htmlUrl)}
+                <button type="button" class="icon-button\${pinned ? " is-active" : ""}" data-pin-document="\${escapeHtml(hit.documentId)}">Gem afgørelse</button>
+                \${hitLink("Afgørelse", hit.htmlUrl)}
                 \${hitLink("PDF", hit.pdfUrl)}
                 \${hitLink("Retsinformation", hit.retsinformationUrl)}
               </div>
@@ -1895,8 +1936,8 @@ export function renderWebUi() {
           : "0 kilder brugt";
         renderAnswerSources(currentHits, referencedNumbers, payload.question);
         renderHits(currentHits, payload.question);
-        const paragraphCount = answerBodyEl.querySelectorAll("p").length;
-        if (payload.answer && paragraphCount > 4) {
+        const blockCount = answerBodyEl.children.length;
+        if (payload.answer && blockCount > 6) {
           answerActionsEl.hidden = false;
           answerBodyEl.classList.add("is-collapsed");
           toggleAnswerButton.textContent = "Vis mere";
@@ -1910,14 +1951,14 @@ export function renderWebUi() {
       async function runSearch(mode) {
         const payload = currentPayload();
         if (!payload.question) {
-          statusEl.textContent = "Skriv et sporgsmal forst.";
+          statusEl.textContent = "Skriv et spørgsmål først.";
           return;
         }
 
         searchButton.disabled = true;
         askButton.disabled = true;
         renderLoadingState(mode);
-        statusEl.textContent = mode === "ask" ? "Genererer kildebundet svar..." : "Soger i afgorelserne...";
+        statusEl.textContent = mode === "ask" ? "Genererer et kildebaseret svar..." : "Søger i afgørelserne...";
 
         try {
           let response;
@@ -1949,7 +1990,7 @@ export function renderWebUi() {
           renderResult(result);
           statusEl.textContent =
             mode === "ask"
-              ? \`Svar genereret pa baggrund af \${result.hits?.length ?? 0} kilder.\`
+              ? \`Svar genereret på baggrund af \${result.hits?.length ?? 0} kilder.\`
               : \`Fandt \${result.hits?.length ?? 0} relevante hits.\`;
         } catch (error) {
           answerEl.hidden = true;
@@ -1960,7 +2001,7 @@ export function renderWebUi() {
           answerSourcesEl.hidden = true;
           answerSourcesGridEl.innerHTML = "";
           resultCountEl.textContent = "0";
-          hitsEl.innerHTML = '<div class="empty">Noget gik galt under sogningen. Prova igen om et ojeblik.</div>';
+          hitsEl.innerHTML = '<div class="empty">Noget gik galt under søgningen. Prøv igen om et øjeblik.</div>';
           statusEl.textContent = error.message;
         } finally {
           searchButton.disabled = false;
