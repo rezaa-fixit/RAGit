@@ -11,9 +11,10 @@ import {
 } from "./lib/retrieval.js";
 import { renderWebUi } from "./lib/web-ui.js";
 
-function json(response, statusCode, payload) {
+function json(response, statusCode, payload, headers = {}) {
   response.writeHead(statusCode, {
-    "Content-Type": "application/json; charset=utf-8"
+    "Content-Type": "application/json; charset=utf-8",
+    ...headers
   });
   response.end(JSON.stringify(payload, null, 2));
 }
@@ -68,14 +69,63 @@ function empty(response, statusCode, headers = {}) {
   response.end();
 }
 
-function isAuthorized(request, config) {
+function parseCookies(header = "") {
+  const cookies = {};
+
+  for (const part of String(header).split(";")) {
+    const trimmed = part.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    const separator = trimmed.indexOf("=");
+    if (separator === -1) {
+      continue;
+    }
+
+    const key = trimmed.slice(0, separator).trim();
+    const value = trimmed.slice(separator + 1).trim();
+    cookies[key] = value;
+  }
+
+  return cookies;
+}
+
+function buildSessionToken(username, password) {
+  return Buffer.from(`${username}:${password}`, "utf8").toString("base64url");
+}
+
+function buildSessionCookie(config) {
+  const token = buildSessionToken(config.basicAuthUser, config.basicAuthPassword);
+  return `ragit_auth=${token}; Path=/; HttpOnly; Secure; SameSite=Lax`;
+}
+
+function authHeaders(config, authState) {
+  if (authState?.via === "basic") {
+    return {
+      "Set-Cookie": buildSessionCookie(config)
+    };
+  }
+
+  return {};
+}
+
+function getAuthorizationState(request, config) {
   if (!config.basicAuthUser || !config.basicAuthPassword) {
-    return true;
+    return { ok: true, via: "disabled" };
+  }
+
+  const cookies = parseCookies(request.headers.cookie ?? "");
+  if (cookies.ragit_auth) {
+    const expectedToken = buildSessionToken(config.basicAuthUser, config.basicAuthPassword);
+    if (cookies.ragit_auth === expectedToken) {
+      return { ok: true, via: "cookie" };
+    }
   }
 
   const header = request.headers.authorization ?? "";
   if (!header.startsWith("Basic ")) {
-    return false;
+    return { ok: false };
   }
 
   let decoded = "";
@@ -83,17 +133,19 @@ function isAuthorized(request, config) {
   try {
     decoded = Buffer.from(header.slice(6), "base64").toString("utf8");
   } catch {
-    return false;
+    return { ok: false };
   }
 
   const separator = decoded.indexOf(":");
   if (separator === -1) {
-    return false;
+    return { ok: false };
   }
 
   const username = decoded.slice(0, separator);
   const password = decoded.slice(separator + 1);
-  return username === config.basicAuthUser && password === config.basicAuthPassword;
+  return username === config.basicAuthUser && password === config.basicAuthPassword
+    ? { ok: true, via: "basic" }
+    : { ok: false };
 }
 
 async function getReadiness(config, fileIndex) {
@@ -163,6 +215,7 @@ async function main() {
       const url = new URL(request.url, `http://${request.headers.host}`);
       const isHead = request.method === "HEAD";
       const isGet = request.method === "GET";
+      const authorizationState = getAuthorizationState(request, config);
 
       if ((isGet || isHead) && url.pathname === "/health") {
         if (isHead) {
@@ -175,7 +228,7 @@ async function main() {
           searchBackend: config.searchBackend,
           documents: fileIndex ? new Set(fileIndex.map((row) => row.documentId)).size : null,
           chunks: fileIndex ? fileIndex.length : null
-        });
+        }, authHeaders(config, authorizationState));
       }
 
       if ((isGet || isHead) && url.pathname === "/ready") {
@@ -185,21 +238,23 @@ async function main() {
             "Content-Type": "application/json; charset=utf-8"
           });
         }
-        return json(response, 200, readiness);
+        return json(response, 200, readiness, authHeaders(config, authorizationState));
       }
 
-      if (!isAuthorized(request, config)) {
+      if (!authorizationState.ok) {
         return unauthorized(response);
       }
 
       if ((isGet || isHead) && url.pathname === "/") {
         if (isHead) {
           return empty(response, 200, {
-            "Content-Type": "text/html; charset=utf-8"
+            "Content-Type": "text/html; charset=utf-8",
+            ...authHeaders(config, authorizationState)
           });
         }
         response.writeHead(200, {
-          "Content-Type": "text/html; charset=utf-8"
+          "Content-Type": "text/html; charset=utf-8",
+          ...authHeaders(config, authorizationState)
         });
         response.end(renderWebUi());
         return;
@@ -208,10 +263,11 @@ async function main() {
       if ((isGet || isHead) && url.pathname === "/metadata") {
         if (isHead) {
           return empty(response, 200, {
-            "Content-Type": "application/json; charset=utf-8"
+            "Content-Type": "application/json; charset=utf-8",
+            ...authHeaders(config, authorizationState)
           });
         }
-        return json(response, 200, metadata);
+        return json(response, 200, metadata, authHeaders(config, authorizationState));
       }
 
       if ((isGet || isHead) && url.pathname === "/search") {
@@ -231,7 +287,8 @@ async function main() {
           : await searchWithBackend(question, config, { limit, filters });
         if (isHead) {
           return empty(response, 200, {
-            "Content-Type": "application/json; charset=utf-8"
+            "Content-Type": "application/json; charset=utf-8",
+            ...authHeaders(config, authorizationState)
           });
         }
         return json(response, 200, {
@@ -239,7 +296,7 @@ async function main() {
           backend: result.backend,
           filters,
           hits: result.hits.map(presentHit)
-        });
+        }, authHeaders(config, authorizationState));
       }
 
       if (request.method === "POST" && url.pathname === "/ask") {
@@ -278,7 +335,7 @@ async function main() {
           filters,
           answer,
           hits: result.hits.map(presentHit)
-        });
+        }, authHeaders(config, authorizationState));
       }
 
       return json(response, 404, { error: "Not found" });
