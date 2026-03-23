@@ -35,7 +35,7 @@ export async function generateAnswer(question, hits, config) {
           {
             role: "system",
             content:
-              "Du er en juridisk RAG-assistent. Svar på dansk og kun ud fra de givne kilder. Brug denne faste struktur og disse overskrifter præcist: 'Kort svar', 'Det vigtigste', 'Kilder' og 'Forbehold'. Under 'Det vigtigste' skal du bruge 3-5 korte punktlinjer. Under 'Kilder' skal du nævne de mest centrale kilder med [Kilde 1], [Kilde 2] osv. Hvis kilderne ikke er tilstrækkelige, skal du skrive det tydeligt under 'Forbehold'. Prioriter de mest direkte juridiske udsagn, brug helst flere forskellige afgørelser hvis kilderne peger i samme retning, og undgå gentagelser."
+              "Du er en juridisk RAG-assistent. Svar på dansk og kun ud fra de givne kilder. Brug denne faste struktur og disse overskrifter præcist: 'Kort svar', 'Det vigtigste', 'Kilder' og 'Forbehold'. Under 'Det vigtigste' skal du bruge 3-5 korte punktlinjer. Under 'Kilder' skal du nævne de mest centrale kilder med [Kilde 1], [Kilde 2] osv. Hvis kilderne ikke er tilstrækkelige, skal du skrive det tydeligt under 'Forbehold'. Skriv i rent tekstformat uden markdown-syntaks som ## eller **. Prioriter de mest direkte juridiske udsagn, brug helst flere forskellige afgørelser hvis kilderne peger i samme retning, og undgå gentagelser."
           },
           {
             role: "user",

@@ -1378,6 +1378,12 @@ export function renderWebUi() {
           .replace(/"/g, "&quot;");
       }
 
+      function applyInlineFormatting(text) {
+        return escapeHtml(text)
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/\[Kilde\s+(\d+)\]/g, '<a href="#source-card-$1" class="answer-ref" data-source-ref="$1">Kilde $1</a>');
+      }
+
       function currentPayload() {
         return {
           question: questionInput.value.trim(),
@@ -1803,19 +1809,35 @@ export function renderWebUi() {
               return "";
             }
 
-            if (lines.length === 1 && /^(Kort svar|Det vigtigste|Kilder|Forbehold)$/i.test(lines[0])) {
-              return \`<h4>\${escapeHtml(lines[0])}</h4>\`;
+            const headingLine = lines[0].replace(/^#+\s*/, "").trim();
+            if (lines.length === 1 && /^(Kort svar|Det vigtigste|Kilder|Forbehold)$/i.test(headingLine)) {
+              return \`<h4>\${escapeHtml(headingLine)}</h4>\`;
+            }
+
+            if (/^#+\s+/.test(lines[0]) && lines.length > 1) {
+              const heading = lines[0].replace(/^#+\s*/, "").trim();
+              const bodyLines = lines.slice(1);
+
+              if (bodyLines.every((line) => /^[-*]\s+/.test(line))) {
+                const items = bodyLines
+                  .map((line) => line.replace(/^[-*]\s+/, ""))
+                  .map((line) => \`<li>\${applyInlineFormatting(line)}</li>\`)
+                  .join("");
+                return \`<h4>\${escapeHtml(heading)}</h4><ul>\${items}</ul>\`;
+              }
+
+              return \`<h4>\${escapeHtml(heading)}</h4><p>\${applyInlineFormatting(bodyLines.join(" "))}</p>\`;
             }
 
             if (lines.every((line) => /^[-*]\\s+/.test(line))) {
               const items = lines
                 .map((line) => line.replace(/^[-*]\\s+/, ""))
-                .map((line) => \`<li>\${escapeHtml(line).replace(/\\[Kilde\\s+(\\d+)\\]/g, '<a href="#source-card-$1" class="answer-ref" data-source-ref="$1">Kilde $1</a>')}</li>\`)
+                .map((line) => \`<li>\${applyInlineFormatting(line)}</li>\`)
                 .join("");
               return \`<ul>\${items}</ul>\`;
             }
 
-            return \`<p>\${escapeHtml(lines.join(" ")).replace(/\\[Kilde\\s+(\\d+)\\]/g, '<a href="#source-card-$1" class="answer-ref" data-source-ref="$1">Kilde $1</a>')}</p>\`;
+            return \`<p>\${applyInlineFormatting(lines.join(" "))}</p>\`;
           })
           .join("");
 
