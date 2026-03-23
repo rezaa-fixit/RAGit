@@ -1345,7 +1345,9 @@ export function renderWebUi() {
       let lastReferencedNumbers = [];
 
       async function loadMetadata() {
-        const response = await fetch("/metadata");
+        const response = await fetch("/metadata", {
+          credentials: "same-origin"
+        });
         const payload = await response.json();
 
         for (const year of payload.years ?? []) {
@@ -1987,6 +1989,7 @@ export function renderWebUi() {
           if (mode === "ask") {
             response = await fetch("/ask", {
               method: "POST",
+              credentials: "same-origin",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload)
             });
@@ -2000,7 +2003,9 @@ export function renderWebUi() {
             if (payload.filters.ministry) params.set("ministry", payload.filters.ministry);
             if (payload.filters.topic) params.set("topic", payload.filters.topic);
 
-            response = await fetch(\`/search?\${params.toString()}\`);
+            response = await fetch(\`/search?\${params.toString()}\`, {
+              credentials: "same-origin"
+            });
           }
 
           const result = await response.json();
