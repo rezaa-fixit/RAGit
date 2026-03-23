@@ -22,36 +22,41 @@ export async function generateAnswer(question, hits, config) {
     )
     .join("\n\n");
 
-  const response = await fetch(`${config.openAiBaseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${config.openAiApiKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: config.chatModel,
-      messages: [
-        {
-          role: "system",
-          content:
-            "Du er en juridisk RAG-assistent. Svar kun ud fra de givne kilder. Hvis kilderne ikke er nok, sig det tydeligt. Medtag altid kildehenvisninger som [Kilde 1], [Kilde 2] osv. Prioriter de mest direkte juridiske udsagn, brug helst flere forskellige afgorelser hvis kilderne peger i samme retning, og undga at bygge svaret pa gentagelser af samme pointe."
-        },
-        {
-          role: "user",
-          content: `Sporgsmal: ${question}\n\nKilder:\n${context}`
-        }
-      ],
-      temperature: 0.1
-    })
-  });
+  try {
+    const response = await fetch(`${config.openAiBaseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.openAiApiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: config.chatModel,
+        messages: [
+          {
+            role: "system",
+            content:
+              "Du er en juridisk RAG-assistent. Svar pa dansk og kun ud fra de givne kilder. Start med en kort konklusion, forklar derefter hovedpunkterne i et klart sprog, og afslut med et kort afsnit om eventuelle forbehold. Hvis kilderne ikke er nok, sig det tydeligt. Medtag altid kildehenvisninger som [Kilde 1], [Kilde 2] osv. Prioriter de mest direkte juridiske udsagn, brug helst flere forskellige afgorelser hvis kilderne peger i samme retning, og undga at bygge svaret pa gentagelser af samme pointe."
+          },
+          {
+            role: "user",
+            content: `Sporgsmal: ${question}\n\nKilder:\n${context}`
+          }
+        ],
+        temperature: 0.1
+      })
+    });
 
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(`Chat completion failed: ${response.status} ${message}`);
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(`Chat completion failed: ${response.status} ${message}`);
+    }
+
+    const payload = await response.json();
+    return payload.choices?.[0]?.message?.content?.trim() ?? buildFallbackAnswer(question, hits);
+  } catch (error) {
+    console.error("Falling back from chat completion:", error);
+    return buildFallbackAnswer(question, hits);
   }
-
-  const payload = await response.json();
-  return payload.choices?.[0]?.message?.content?.trim() ?? "";
 }
 
 function buildFallbackAnswer(question, hits) {

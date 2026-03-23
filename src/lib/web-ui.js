@@ -1185,8 +1185,8 @@ export function renderWebUi() {
             </div>
 
             <div class="actions">
-              <button type="submit" class="primary" id="search-button">Search</button>
-              <button type="button" class="secondary" id="ask-button">Svar</button>
+                <button type="submit" class="primary" id="ask-button">Svar med AI</button>
+                <button type="button" class="secondary" id="search-button">Find kilder</button>
             </div>
 
             <div class="suggestions">
@@ -1296,8 +1296,8 @@ export function renderWebUi() {
       const metaEl = document.getElementById("meta");
       const activeFiltersEl = document.getElementById("active-filters");
       const resultCountEl = document.getElementById("result-count");
-      const searchButton = document.getElementById("search-button");
-      const askButton = document.getElementById("ask-button");
+        const askButton = document.getElementById("ask-button");
+        const searchButton = document.getElementById("search-button");
       const clearFiltersButton = document.getElementById("clear-filters");
       const clearHistoryButton = document.getElementById("clear-history");
       const historyListEl = document.getElementById("history-list");
@@ -1968,12 +1968,13 @@ export function renderWebUi() {
         }
       }
 
-      document.getElementById("search-form").addEventListener("submit", (event) => {
-        event.preventDefault();
-        runSearch("search");
-      });
+        document.getElementById("search-form").addEventListener("submit", (event) => {
+          event.preventDefault();
+          runSearch("ask");
+        });
 
-      askButton.addEventListener("click", () => runSearch("ask"));
+        askButton.addEventListener("click", () => runSearch("ask"));
+        searchButton.addEventListener("click", () => runSearch("search"));
 
       toggleAnswerButton.addEventListener("click", () => {
         const collapsed = answerBodyEl.classList.toggle("is-collapsed");
