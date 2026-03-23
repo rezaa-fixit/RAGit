@@ -186,3 +186,4 @@ Folgende er nu ignoreret i git:
 - finpudsning af auth og deling
 - deling eller eksport af workspaces
 - mere avanceret sammenligning mellem pinned afgorelser
+"# RAGit" 
