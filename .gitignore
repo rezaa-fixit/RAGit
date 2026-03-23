@@ -1,0 +1,6 @@
+data/
+node_modules/
+.env
+.env.local
+*.log
+RAG OpenAI-API Key*.txt

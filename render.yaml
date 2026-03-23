@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: ombudsmanden-rag
+    runtime: docker
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: SEARCH_BACKEND
+        value: postgres
+      - key: PGSSLMODE
+        value: require
+      - key: BASIC_AUTH_USER
+        sync: false
+      - key: BASIC_AUTH_PASSWORD
+        sync: false

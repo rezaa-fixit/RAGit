@@ -1,0 +1,25 @@
+{
+  "name": "ombudsmanden-rag",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "ingest": "node ./src/cli/ingest.js",
+    "build-corpus": "node ./src/cli/build-corpus.js",
+    "embed-corpus": "node ./src/cli/embed-corpus.js",
+    "db:init": "node ./src/cli/db-init.js",
+    "db:load": "node ./src/cli/db-load.js",
+    "db:search": "node ./src/cli/db-search.js",
+    "validate-config": "node ./src/cli/validate-config.js",
+    "ask": "node ./src/cli/ask.js",
+    "serve": "node ./src/server.js",
+    "start": "node ./src/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "pdfjs-dist": "^5.5.207",
+    "pg": "^8.20.0"
+  }
+}
