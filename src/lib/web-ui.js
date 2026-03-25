@@ -1700,6 +1700,18 @@ export function renderWebUi() {
         return \`\${normalized.slice(0, maxLength).trim()}...\`;
       }
 
+      function normalizeTopics(topics) {
+        if (Array.isArray(topics)) {
+          return topics;
+        }
+
+        if (typeof topics === "string" && topics.trim()) {
+          return [topics.trim()];
+        }
+
+        return [];
+      }
+
       function escapeRegex(value) {
         return String(value).replace(/[.*+?^{}$()|[\]\\]/g, "\\$&");
       }
@@ -1716,8 +1728,13 @@ export function renderWebUi() {
           return escapeHtml(summary);
         }
 
-        const pattern = new RegExp(\`(\${tokens.map(escapeRegex).join("|")})\`, "giu");
-        return escapeHtml(summary).replace(pattern, "<mark>$1</mark>");
+        try {
+          const pattern = new RegExp(\`(\${tokens.map(escapeRegex).join("|")})\`, "giu");
+          return escapeHtml(summary).replace(pattern, "<mark>$1</mark>");
+        } catch (error) {
+          console.error("Kunne ikke fremhaeve soegeresultat", error);
+          return escapeHtml(summary);
+        }
       }
 
       function clearFilters() {
@@ -1848,6 +1865,12 @@ export function renderWebUi() {
       }
 
       function renderAnswerSources(hits, referencedNumbers, query) {
+        if (!hits?.length) {
+          answerSourcesEl.hidden = true;
+          answerSourcesGridEl.innerHTML = "";
+          return;
+        }
+
         const referencedSet = new Set(referencedNumbers);
         const selectedHits = referencedSet.size
           ? hits.filter((_, index) => referencedSet.has(index + 1))
@@ -1861,33 +1884,48 @@ export function renderWebUi() {
 
         answerSourcesEl.hidden = false;
         answerSourcesGridEl.innerHTML = selectedHits.map((hit) => {
-          const index = hits.findIndex((candidate) => candidate.chunkId === hit.chunkId) + 1;
-          const isReferenced = referencedSet.has(index);
-          const meta = [hit.documentId, hit.referenceLabel, hit.date].filter(Boolean);
-          const pinned = isPinned(hit.documentId);
+          try {
+            const index = hits.findIndex((candidate) => candidate.chunkId === hit.chunkId) + 1;
+            const isReferenced = referencedSet.has(index);
+            const meta = [hit.documentId, hit.referenceLabel, hit.date].filter(Boolean);
+            const pinned = isPinned(hit.documentId);
 
-          return \`
-            <article id="source-card-\${index}" class="source-card\${isReferenced ? " is-referenced" : ""}" data-source-card="\${index}">
-              <div class="source-top">
-                <div>
-                  <div class="source-index">Kilde \${index}</div>
-                  <h4 class="source-title">
-                    <a href="\${hit.htmlUrl}" target="_blank" rel="noreferrer">\${escapeHtml(hit.title)}</a>
-                  </h4>
+            return \`
+              <article id="source-card-\${index}" class="source-card\${isReferenced ? " is-referenced" : ""}" data-source-card="\${index}">
+                <div class="source-top">
+                  <div>
+                    <div class="source-index">Kilde \${index}</div>
+                    <h4 class="source-title">
+                      <a href="\${hit.htmlUrl}" target="_blank" rel="noreferrer">\${escapeHtml(hit.title)}</a>
+                    </h4>
+                  </div>
+                  <div class="hit-meta">
+                    \${meta.map((item) => \`<span class="tag">\${escapeHtml(item)}</span>\`).join("")}
+                    <button type="button" class="icon-button\${pinned ? " is-active" : ""}" data-pin-document="\${escapeHtml(hit.documentId)}">Gem</button>
+                  </div>
                 </div>
-                <div class="hit-meta">
-                  \${meta.map((item) => \`<span class="tag">\${escapeHtml(item)}</span>\`).join("")}
-                  <button type="button" class="icon-button\${pinned ? " is-active" : ""}" data-pin-document="\${escapeHtml(hit.documentId)}">Gem</button>
+                <div class="source-snippet">\${highlightText(hit.text, query)}</div>
+                <div class="hit-links">
+                  \${hitLink("Afgørelse", hit.htmlUrl)}
+                  \${hitLink("PDF", hit.pdfUrl)}
+                  \${hitLink("Retsinformation", hit.retsinformationUrl)}
                 </div>
-              </div>
-              <div class="source-snippet">\${highlightText(hit.text, query)}</div>
-              <div class="hit-links">
-                \${hitLink("Afgørelse", hit.htmlUrl)}
-                \${hitLink("PDF", hit.pdfUrl)}
-                \${hitLink("Retsinformation", hit.retsinformationUrl)}
-              </div>
-            </article>
-          \`;
+              </article>
+            \`;
+          } catch (error) {
+            console.error("Kunne ikke vise kildekort", error, hit);
+            return \`
+              <article class="source-card">
+                <div class="source-top">
+                  <div>
+                    <div class="source-index">Kilde</div>
+                    <h4 class="source-title">\${escapeHtml(hit?.title ?? "Ukendt kilde")}</h4>
+                  </div>
+                </div>
+                <div class="source-snippet">\${escapeHtml(summarizeText(hit?.text ?? ""))}</div>
+              </article>
+            \`;
+          }
         }).join("");
       }
 
@@ -1915,35 +1953,53 @@ export function renderWebUi() {
         }
 
         hitsEl.innerHTML = hits.map((hit, index) => {
-          const meta = [hit.documentId, hit.date, hit.ministry, hit.referenceLabel].filter(Boolean);
-          const topicTags = (hit.topics ?? []).slice(0, 3).map((topic) => formatTag("Emne", topic)).join("");
-          const summary = highlightText(hit.text, query);
-          const pinned = isPinned(hit.documentId);
+          try {
+            const meta = [hit.documentId, hit.date, hit.ministry, hit.referenceLabel].filter(Boolean);
+            const topicTags = normalizeTopics(hit.topics).slice(0, 3).map((topic) => formatTag("Emne", topic)).join("");
+            const summary = highlightText(hit.text, query);
+            const pinned = isPinned(hit.documentId);
 
-          return \`
-            <article class="hit">
-              <div class="hit-top">
-                <div>
-                  <div class="hit-index">Hit \${index + 1}</div>
-                  <h3 class="hit-title">
-                    <a href="\${hit.htmlUrl}" target="_blank" rel="noreferrer">\${escapeHtml(hit.title)}</a>
-                  </h3>
+            return \`
+              <article class="hit">
+                <div class="hit-top">
+                  <div>
+                    <div class="hit-index">Hit \${index + 1}</div>
+                    <h3 class="hit-title">
+                      <a href="\${hit.htmlUrl}" target="_blank" rel="noreferrer">\${escapeHtml(hit.title)}</a>
+                    </h3>
+                  </div>
+                  <div class="hit-meta">\${meta.map((item) => \`<span class="tag">\${escapeHtml(item)}</span>\`).join("")}</div>
                 </div>
-                <div class="hit-meta">\${meta.map((item) => \`<span class="tag">\${escapeHtml(item)}</span>\`).join("")}</div>
-              </div>
 
-              \${topicTags ? \`<div class="meta-row">\${topicTags}</div>\` : ""}
+                \${topicTags ? \`<div class="meta-row">\${topicTags}</div>\` : ""}
 
-              <div class="hit-summary">\${summary}</div>
+                <div class="hit-summary">\${summary}</div>
 
-              <div class="hit-links">
-                <button type="button" class="icon-button\${pinned ? " is-active" : ""}" data-pin-document="\${escapeHtml(hit.documentId)}">Gem afgørelse</button>
-                \${hitLink("Afgørelse", hit.htmlUrl)}
-                \${hitLink("PDF", hit.pdfUrl)}
-                \${hitLink("Retsinformation", hit.retsinformationUrl)}
-              </div>
-            </article>
-          \`;
+                <div class="hit-links">
+                  <button type="button" class="icon-button\${pinned ? " is-active" : ""}" data-pin-document="\${escapeHtml(hit.documentId)}">Gem afgørelse</button>
+                  \${hitLink("Afgørelse", hit.htmlUrl)}
+                  \${hitLink("PDF", hit.pdfUrl)}
+                  \${hitLink("Retsinformation", hit.retsinformationUrl)}
+                </div>
+              </article>
+            \`;
+          } catch (error) {
+            console.error("Kunne ikke vise søgeresultat", error, hit);
+            return \`
+              <article class="hit">
+                <div class="hit-top">
+                  <div>
+                    <div class="hit-index">Hit \${index + 1}</div>
+                    <h3 class="hit-title">\${escapeHtml(hit?.title ?? "Ukendt afgørelse")}</h3>
+                  </div>
+                </div>
+                <div class="hit-summary">\${escapeHtml(summarizeText(hit?.text ?? ""))}</div>
+                <div class="hit-links">
+                  \${hitLink("Afgørelse", hit?.htmlUrl)}
+                </div>
+              </article>
+            \`;
+          }
         }).join("");
       }
 
@@ -1958,7 +2014,12 @@ export function renderWebUi() {
         answerBadgeEl.textContent = payload.answer
           ? \`\${referencedNumbers.length || Math.min(hitCount, 3)} kilder brugt\`
           : "0 kilder brugt";
-        renderAnswerSources(currentHits, referencedNumbers, payload.question);
+        if (payload.answer) {
+          renderAnswerSources(currentHits, referencedNumbers, payload.question);
+        } else {
+          answerSourcesEl.hidden = true;
+          answerSourcesGridEl.innerHTML = "";
+        }
         renderHits(currentHits, payload.question);
         const blockCount = answerBodyEl.children.length;
         if (payload.answer && blockCount > 6) {

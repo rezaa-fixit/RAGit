@@ -1,7 +1,7 @@
 import http from "node:http";
 import { loadConfig } from "./lib/config.js";
 import { generateAnswer } from "./lib/llm.js";
-import { createPool, testConnection } from "./lib/postgres.js";
+import { createPool, fetchDatabaseMetadata, testConnection } from "./lib/postgres.js";
 import {
   collectMetadata,
   loadSearchIndex,
@@ -195,12 +195,39 @@ async function getReadiness(config, fileIndex) {
   }
 }
 
+async function getMetadata(config, fileIndex) {
+  if (fileIndex) {
+    return collectMetadata(fileIndex);
+  }
+
+  if (config.searchBackend === "file") {
+    return collectMetadata([]);
+  }
+
+  const pool = createPool(config);
+  try {
+    await testConnection(pool);
+    return await fetchDatabaseMetadata(pool);
+  } catch (error) {
+    if (config.searchBackend !== "auto") {
+      throw error;
+    }
+
+    if (fileIndex) {
+      return collectMetadata(fileIndex);
+    }
+
+    throw error;
+  } finally {
+    await pool.end().catch(() => {});
+  }
+}
+
 async function main() {
   const config = await loadConfig();
   const fileIndex = config.searchBackend === "file"
     ? await loadOptionalSearchIndex()
     : await loadOptionalSearchIndex();
-  const metadata = collectMetadata(fileIndex ?? []);
 
   function parseFilters(searchParams) {
     return {
@@ -261,6 +288,7 @@ async function main() {
       }
 
       if ((isGet || isHead) && url.pathname === "/metadata") {
+        const metadata = await getMetadata(config, fileIndex);
         if (isHead) {
           return empty(response, 200, {
             "Content-Type": "application/json; charset=utf-8",

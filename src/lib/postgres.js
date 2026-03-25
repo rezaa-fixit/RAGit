@@ -295,6 +295,36 @@ export async function searchDatabase(pool, queryEmbedding, question, options = {
   }));
 }
 
+export async function fetchDatabaseMetadata(pool) {
+  const [yearsResult, ministriesResult, topicsResult] = await Promise.all([
+    pool.query(`
+      select distinct extract(year from decision_date)::int as year
+      from documents
+      where decision_date is not null
+      order by year desc
+    `),
+    pool.query(`
+      select distinct ministry
+      from documents
+      where coalesce(ministry, '') <> ''
+      order by ministry asc
+    `),
+    pool.query(`
+      select distinct topic
+      from documents
+      cross join unnest(topics) as topic
+      where coalesce(topic, '') <> ''
+      order by topic asc
+    `)
+  ]);
+
+  return {
+    years: yearsResult.rows.map((row) => String(row.year)),
+    ministries: ministriesResult.rows.map((row) => row.ministry),
+    topics: topicsResult.rows.map((row) => row.topic)
+  };
+}
+
 function toIsoDate(value) {
   if (!value) {
     return null;
