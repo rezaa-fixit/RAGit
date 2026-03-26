@@ -1401,7 +1401,16 @@ export function renderWebUi() {
       function readStorage(key, fallback = []) {
         try {
           const raw = window.localStorage.getItem(key);
-          return raw ? JSON.parse(raw) : fallback;
+          if (!raw) {
+            return fallback;
+          }
+
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(fallback) && !Array.isArray(parsed)) {
+            return fallback;
+          }
+
+          return parsed;
         } catch {
           return fallback;
         }
@@ -1452,7 +1461,7 @@ export function renderWebUi() {
       }
 
       function isPinned(documentId) {
-        return pinnedDocuments.some((item) => item.documentId === documentId);
+        return Array.isArray(pinnedDocuments) && pinnedDocuments.some((item) => item.documentId === documentId);
       }
 
       function togglePin(hit) {
