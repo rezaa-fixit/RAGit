@@ -1391,8 +1391,8 @@ export function renderWebUi() {
 
       function applyInlineFormatting(text) {
         return escapeHtml(text)
-          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-          .replace(/\[Kilde\s+(\d+)\]/g, '<a href="#source-card-$1" class="answer-ref" data-source-ref="$1">Kilde $1</a>');
+          .replace(/\\*\\*(.+?)\\*\\*/g, "<strong>$1</strong>")
+          .replace(/\\[Kilde\\s+(\\d+)\\]/g, '<a href="#source-card-$1" class="answer-ref" data-source-ref="$1">Kilde $1</a>');
       }
 
       function currentPayload() {
