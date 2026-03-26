@@ -914,6 +914,15 @@ export function renderWebUi() {
         line-height: 1.7;
       }
 
+      .error-detail {
+        margin-top: 12px;
+        color: #8a2f2f;
+        font-family: "Arial", sans-serif;
+        font-size: 0.84rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+      }
+
       .hit-list {
         display: grid;
         gap: 14px;
@@ -2090,6 +2099,7 @@ export function renderWebUi() {
               ? \`Svar genereret på baggrund af \${result.hits?.length ?? 0} kilder.\`
               : \`Fandt \${result.hits?.length ?? 0} relevante hits.\`;
         } catch (error) {
+          console.error("Search failed in browser", error);
           answerEl.hidden = true;
           answerBadgeEl.textContent = "0 kilder brugt";
           answerBodyEl.textContent = "";
@@ -2099,6 +2109,7 @@ export function renderWebUi() {
           answerSourcesGridEl.innerHTML = "";
           resultCountEl.textContent = "0";
           hitsEl.innerHTML = '<div class="empty">Noget gik galt under søgningen. Prøv igen om et øjeblik.</div>';
+          hitsEl.insertAdjacentHTML("beforeend", '<div class="error-detail">' + escapeHtml(error?.message ?? "Ukendt fejl") + '</div>');
           statusEl.textContent = error.message;
         } finally {
           searchButton.disabled = false;
