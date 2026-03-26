@@ -609,7 +609,7 @@ export function renderWebUi() {
           linear-gradient(135deg, rgba(16, 79, 71, 0.06), transparent);
       }
 
-      .answer h3 { margin: 0 0 12px; font-size: 1.02rem; }
+      .answer h3 { margin: 0; font-size: 1.08rem; }
 
       .answer-head {
         display: flex;
@@ -617,6 +617,19 @@ export function renderWebUi() {
         justify-content: space-between;
         gap: 16px;
         margin-bottom: 14px;
+      }
+
+      .answer-head-copy {
+        display: grid;
+        gap: 6px;
+      }
+
+      .answer-head-copy p {
+        margin: 0;
+        max-width: 58ch;
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.55;
       }
 
       .answer-badge {
@@ -1098,7 +1111,7 @@ export function renderWebUi() {
             <div class="brand-mark">FO</div>
             <div class="brand-copy">
               <div class="brand-kicker">Juridisk Retrieval</div>
-              <div class="brand-title">Ombudsmandens udtalelser med citationsdrevet RAG</div>
+              <div class="brand-title">Ombudsmandens udtalelser med kildebaserede svar</div>
             </div>
           </div>
           <div class="topbar-note">Neon + pgvector + OpenAI embeddings</div>
@@ -1107,10 +1120,11 @@ export function renderWebUi() {
         <section class="hero">
           <div class="hero-copy">
             <div class="eyebrow">Folketingets Ombudsmand</div>
-              <h1>Juridisk søgning med klare svar.</h1>
+              <h1>Juridiske svar med klare kilder.</h1>
               <div class="hero-text">
-              Søg, filtrer og få kildebaserede svar med direkte henvisninger til relevante udtalelser, sider og afgørelser.
-              Løsningen kombinerer hybrid retrieval, metadatafiltre og et svarlag, der holder sig tæt til kilderne.
+              Stil spørgsmål i almindeligt sprog, afgræns materialet med filtre og få svar med direkte henvisninger til relevante
+              udtalelser, sider og afgørelser. Løsningen kombinerer hybrid søgning, metadatafiltre og et svarlag, der holder sig tæt
+              til kilderne.
               </div>
 
             <div class="hero-grid">
@@ -1120,7 +1134,7 @@ export function renderWebUi() {
               </div>
               <div class="stat">
                 <div class="stat-value" id="stat-years">3</div>
-                <div class="stat-label">Argange</div>
+                <div class="stat-label">Årgange</div>
               </div>
               <div class="stat">
                 <div class="stat-value" id="stat-topics">0</div>
@@ -1131,9 +1145,9 @@ export function renderWebUi() {
 
           <aside class="hero-card">
             <div class="card-kicker">Arbejdsflow</div>
-            <h2>Bygget til hurtig afklaring</h2>
+            <h2>Bygget til hurtig juridisk afklaring</h2>
             <p>
-              Brug kildesøgning til præcise fund eller AI-svar til et kort juridisk overblik. Filtrene afgrænser
+              Brug kildesøgning til præcise fund eller AI-svar til et hurtigt juridisk overblik. Filtrene afgrænser
               datagrundlaget, og hvert hit viser, hvor i materialet svaret stammer fra.
             </p>
 
@@ -1144,7 +1158,7 @@ export function renderWebUi() {
               </div>
               <div class="hero-item">
                 <strong>Svar</strong>
-                <span>Til kort juridisk syntese med citationer</span>
+                <span>Til et kort svar med tydelige kildehenvisninger</span>
               </div>
               <div class="hero-item">
                 <strong>Filtre</strong>
@@ -1159,21 +1173,20 @@ export function renderWebUi() {
             <div class="panel-heading">
               <div>
                 <div class="section-kicker">Arbejdspanel</div>
-                <h2>Stil et juridisk spørgsmål</h2>
+                <h2>Stil dit spørgsmål</h2>
               </div>
             </div>
             <div class="panel-subtitle">
-              Brug et konkret spørgsmål, eller filtrer korpuset for at fokusere på en bestemt myndighed
-              eller periode.
+              Skriv i almindeligt sprog, og brug filtrene til at afgrænse materialet efter år, myndighed eller emne.
             </div>
 
             <div class="form-grid">
               <label>
                 <div class="label-row">
                   <span class="label">Spørgsmål</span>
-                  <span class="label-hint">Naturligt sprog</span>
+                  <span class="label-hint">Almindeligt sprog</span>
                 </div>
-                <textarea id="question" placeholder="Hvad gælder der om aktindsigt i dokumenter på en aktliste?"></textarea>
+                <textarea id="question" placeholder="Hvad gælder for aktindsigt i dokumenter på en aktliste?"></textarea>
               </label>
 
               <div class="control-row">
@@ -1242,15 +1255,15 @@ export function renderWebUi() {
               <div class="mini-list" id="pins-list"></div>
             </div>
 
-            <div class="status" id="status">Klar til at søge i kilder og generere svar.</div>
+            <div class="status" id="status">Klar til at finde kilder og formulere svar.</div>
           </form>
 
           <section class="panel results">
             <div class="results-head">
               <div>
                 <div class="section-kicker">Resultater</div>
-                <h2>Fund og svar</h2>
-                <p>Hver kilde viser sag, reference og direkte links til originalmaterialet.</p>
+                <h2>Svar og kilder</h2>
+                <p>Her vises både AI-svar og de afgørelser, som svaret bygger på.</p>
               </div>
               <div class="results-count"><strong id="result-count">0</strong> hits</div>
             </div>
@@ -1269,7 +1282,7 @@ export function renderWebUi() {
               <div class="workspace-controls">
                 <input class="workspace-labels" id="workspace-filter" placeholder="Filtrer på label, titel eller FOB-id" />
                 <select id="workspace-sort">
-                  <option value="recent">Nyeste pin først</option>
+                  <option value="recent">Senest gemte først</option>
                   <option value="title">Titel A-Z</option>
                   <option value="date_desc">Dato nyeste først</option>
                   <option value="date_asc">Dato ældste først</option>
@@ -1285,26 +1298,29 @@ export function renderWebUi() {
             <section class="answer" id="answer" hidden>
               <div class="answer-head">
                 <div>
-                  <div class="card-kicker">Syntese</div>
-                  <h3>Kildebundet svar</h3>
+                  <div class="card-kicker">Svar</div>
+                  <div class="answer-head-copy">
+                    <h3>AI-svar med kilder</h3>
+                    <p>Et kort juridisk overblik først, derefter de vigtigste pointer, kilderne bag svaret og eventuelle forbehold.</p>
+                  </div>
                 </div>
-                <div class="answer-badge" id="answer-badge">0 kilder brugt</div>
+                <div class="answer-badge" id="answer-badge">0 kilder</div>
               </div>
               <div class="answer-body" id="answer-body"></div>
               <div class="answer-actions" id="answer-actions" hidden>
                 <button type="button" class="icon-button" id="toggle-answer">Vis mere</button>
               </div>
               <div class="answer-sources" id="answer-sources" hidden>
-                <div class="card-kicker">Kilder i svaret</div>
+                <div class="card-kicker">Kilder bag svaret</div>
                 <div class="answer-sources-grid" id="answer-sources-grid"></div>
               </div>
             </section>
 
             <div class="hit-list" id="hits">
               <div class="empty">
-                Start med et spørgsmål eller et af forslagene til venstre. Resultaterne viser de mest relevante
-                udtalelser med kildehenvisninger og links.
-              </div>
+                  Start med et spørgsmål eller vælg et af forslagene til venstre. Her vises de mest relevante kilder og de
+                  svar, der kan udledes af dem.
+                </div>
             </div>
           </section>
         </section>
@@ -1454,7 +1470,7 @@ export function renderWebUi() {
       function renderHistory() {
         const history = readStorage(STORAGE_KEYS.history);
         if (!history.length) {
-          historyListEl.innerHTML = '<span class="tag">Ingen historik endnu</span>';
+          historyListEl.innerHTML = '<span class="tag">Ingen søgninger endnu</span>';
           return;
         }
 
@@ -1665,7 +1681,7 @@ export function renderWebUi() {
 
       function exportWorkspace() {
         if (!pinnedDocuments.length) {
-          statusEl.textContent = "Der er ingen gemte afgørelser at eksportere.";
+          statusEl.textContent = "Der er ingen gemte afgørelser at eksportere endnu.";
           return;
         }
 
@@ -1702,7 +1718,7 @@ export function renderWebUi() {
         link.click();
         link.remove();
         URL.revokeObjectURL(url);
-          statusEl.textContent = "Arbejdsbordet er eksporteret som Markdown.";
+          statusEl.textContent = "Arbejdsbordet er eksporteret som Markdown-fil.";
       }
 
       function formatTag(label, value) {
@@ -1763,7 +1779,7 @@ export function renderWebUi() {
 
       function renderLoadingState(mode) {
         answerEl.hidden = true;
-        answerBadgeEl.textContent = "0 kilder brugt";
+        answerBadgeEl.textContent = "0 kilder";
         answerBodyEl.textContent = "";
         answerActionsEl.hidden = true;
         answerBodyEl.classList.remove("is-collapsed");
@@ -1966,7 +1982,7 @@ export function renderWebUi() {
 
       function renderHits(hits, query) {
         if (!hits?.length) {
-          hitsEl.innerHTML = '<div class="empty">Ingen resultater for de valgte filtre. Prøv at fjerne et filter eller omformulere spørgsmålet.</div>';
+            hitsEl.innerHTML = '<div class="empty">Ingen kilder matcher de valgte filtre. Prøv at fjerne et filter eller omformulere spørgsmålet.</div>';
           return;
         }
 
@@ -2029,9 +2045,9 @@ export function renderWebUi() {
         answerEl.hidden = !payload.answer;
         const referencedNumbers = renderAnswerBody(payload.answer ?? "");
         lastReferencedNumbers = referencedNumbers;
-        answerBadgeEl.textContent = payload.answer
-          ? \`\${referencedNumbers.length || Math.min(hitCount, 3)} kilder brugt\`
-          : "0 kilder brugt";
+answerBadgeEl.textContent = payload.answer
+          ? \`\${referencedNumbers.length || Math.min(hitCount, 3)} kilder\`
+          : "0 kilder";
         if (payload.answer) {
           renderAnswerSources(currentHits, referencedNumbers, payload.question);
         } else {
@@ -2061,7 +2077,7 @@ export function renderWebUi() {
         searchButton.disabled = true;
         askButton.disabled = true;
         renderLoadingState(mode);
-        statusEl.textContent = mode === "ask" ? "Genererer et kildebaseret svar..." : "Søger i afgørelserne...";
+        statusEl.textContent = mode === "ask" ? "Udarbejder et svar på baggrund af kilderne..." : "Finder de mest relevante kilder...";
 
         try {
           let response;
@@ -2096,12 +2112,12 @@ export function renderWebUi() {
           renderResult(result);
           statusEl.textContent =
             mode === "ask"
-              ? \`Svar genereret på baggrund af \${result.hits?.length ?? 0} kilder.\`
-              : \`Fandt \${result.hits?.length ?? 0} relevante hits.\`;
+              ? \`Svar udarbejdet på baggrund af \${result.hits?.length ?? 0} kilder.\`
+              : \`Fandt \${result.hits?.length ?? 0} relevante kilder.\`;
         } catch (error) {
           console.error("Search failed in browser", error);
           answerEl.hidden = true;
-          answerBadgeEl.textContent = "0 kilder brugt";
+          answerBadgeEl.textContent = "0 kilder";
           answerBodyEl.textContent = "";
           answerActionsEl.hidden = true;
           answerBodyEl.classList.remove("is-collapsed");

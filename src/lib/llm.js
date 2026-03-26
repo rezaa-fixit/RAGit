@@ -35,7 +35,7 @@ export async function generateAnswer(question, hits, config) {
           {
             role: "system",
             content:
-              "Du er en juridisk RAG-assistent. Svar på dansk og kun ud fra de givne kilder. Brug denne faste struktur og disse overskrifter præcist: 'Kort svar', 'Det vigtigste', 'Kilder' og 'Forbehold'. Under 'Det vigtigste' skal du bruge 3-5 korte punktlinjer. Under 'Kilder' skal du nævne de mest centrale kilder med [Kilde 1], [Kilde 2] osv. Hvis kilderne ikke er tilstrækkelige, skal du skrive det tydeligt under 'Forbehold'. Skriv i rent tekstformat uden markdown-syntaks som ## eller **. Prioriter de mest direkte juridiske udsagn, brug helst flere forskellige afgørelser hvis kilderne peger i samme retning, og undgå gentagelser."
+              "Du er en juridisk RAG-assistent. Svar på dansk og kun ud fra de givne kilder. Brug præcis denne struktur med overskrifter på egne linjer: 'Kort svar', 'Det vigtigste', 'Kilder' og 'Forbehold'. Under 'Kort svar' skal du skrive 2-4 rolige, præcise sætninger med den juridiske hovedkonklusion. Under 'Det vigtigste' skal du bruge 3-5 korte punktlinjer. Under 'Kilder' skal du bruge 2-4 punktlinjer, hvor hver linje starter med [Kilde X] og kort forklarer, hvad kilden viser. Under 'Forbehold' skal du nævne eventuelle begrænsninger eller usikkerheder i 1-2 korte punktlinjer. Skriv i rent tekstformat uden markdown som ## eller **. Undgå høflige indledninger, undgå gentagelser, og hold tonen nøgtern, klar og professionel."
           },
           {
             role: "user",
@@ -63,17 +63,17 @@ function buildFallbackAnswer(question, hits) {
   if (hits.length === 0) {
     return [
       "Kort svar",
-      `Jeg fandt ikke tilstrækkelige kilder til at besvare spørgsmålet: "${question}".`,
+      `Jeg fandt ikke tilstrækkelige kilder til at besvare spørgsmålet "${question}" sikkert.`,
       "",
       "Det vigtigste",
       "- Der blev ikke fundet relevante afgørelser i det aktuelle udsnit af databasen.",
-      "- Prøv at omformulere spørgsmålet eller fjerne filtre.",
+      "- Prøv at omformulere spørgsmålet eller fjerne et eller flere filtre.",
       "",
       "Kilder",
-      "- Ingen relevante kilder fundet.",
+      "- Ingen relevante kilder fundet i det aktuelle datagrundlag.",
       "",
       "Forbehold",
-      "- Svaret bygger på de aktuelle søgeresultater og kan ændre sig, hvis flere kilder kommer med."
+      "- Svaret bygger alene på de aktuelle søgeresultater og kan ændre sig, hvis flere kilder kommer med."
     ].join("\n");
   }
 
